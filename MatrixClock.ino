@@ -12,15 +12,15 @@
 #define CS     	15     // Pin cs  (SPI)
 #define anzMAX 	6      // Anzahl der kaskadierten Module
 
-char ssid[] = "Wolles-POWERLINE";         				// your network SSID (name)
-char pass[] = "86472097922942014909";     				// your network password
+char ssid[] = "my-WiFi";         				// your network SSID (name)
+char pass[] = "xxxxxxxxxxxxxxxx";     				// your network password
 
 unsigned short maxPosX = anzMAX * 8 - 1; 					//calculated maxposition
 unsigned short LEDarr[anzMAX][8];						//character matrix to display (40*8)
 unsigned short helpArrMAX[anzMAX * 8];    				//helperarray for chardecoding
 unsigned short helpArrPos[anzMAX * 8];				//helperarray pos of chardecoding
-unsigned int z_PosX = 0;									//xPosition im Display für Zeitanzeige
-unsigned int d_PosX = 0;                 //xPosition im Display für Datumanzeige
+unsigned int z_PosX = 0;									//xPosition im Display fÃ¼r Zeitanzeige
+unsigned int d_PosX = 0;                 //xPosition im Display fÃ¼r Datumanzeige
 bool f_tckr1s = false;
 bool f_tckr50ms = false;
 bool f_tckr24h = false;
@@ -32,7 +32,7 @@ byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packe
 IPAddress timeServerIP;                     // time.nist.gov NTP server address
 tm *tt, ttm;
 
-//Variablen für RTC DS3231
+//Variablen fÃ¼r RTC DS3231
 const unsigned char DS3231_ADDRESS = 0x68;
 const unsigned char secondREG = 0x00;
 const unsigned char minuteREG = 0x01;
@@ -357,7 +357,7 @@ float rtc_temp() {
 void rtc2mez() {
 
 	unsigned short JaZiff;       //Jahresziffer
-	unsigned short JhZiff = 6;   //Jahrhundertziffer für 20.Jahrhundert
+	unsigned short JhZiff = 6;   //Jahrhundertziffer fÃ¼r 20.Jahrhundert
 	unsigned short TaZiff;       //Tagesziffer
 	unsigned short WoTag;        //Wochentag
 	unsigned short SJK = 0;        //Schaltjahreskorrektur
