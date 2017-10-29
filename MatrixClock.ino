@@ -854,7 +854,7 @@ void loop() {
 			char2Arr(M_arr[MEZ.mon12 - 1][1], d_PosX - 37, 0);
 			char2Arr(M_arr[MEZ.mon12 - 1][2], d_PosX - 43, 0);
 			char2Arr(M_arr[MEZ.mon12 - 1][3], d_PosX - 49, 0);
-			char2Arr(M_arr[MEZ.mon12][4], d_PosX - 55, 0);
+			char2Arr(M_arr[MEZ.mon12 - 1][4], d_PosX - 55, 0);
 			char2Arr('2', d_PosX - 62, 0);                     //year
 			char2Arr('0', d_PosX - 68, 0);
 			char2Arr(48 + MEZ.jahr2, d_PosX - 74, 0);
