@@ -3,24 +3,27 @@
 #include <SPI.h>
 #include <Ticker.h>
 #include <ESP8266WiFi.h>
+#include <WiFiClient.h>
 #include <WiFiUdp.h>
 #include <wire.h>
-#include "time.h"
+#include <time.h>
+
+
 
 #define SDA    	5      // Pin sda (I2C)
 #define SCL    	4      // Pin scl (I2C)
 #define CS     	15     // Pin cs  (SPI)
 #define anzMAX 	6      // Anzahl der kaskadierten Module
 
-char ssid[] = "Wolles-WiFi";         				// your network SSID (name)
-char pass[] = "xxxxxxxxxxxxxxxx";     				// your network password
+char ssid[] = "Wolles-FRITZBOX";         				// your network SSID (name)
+char pass[] = "40441061073895958449";     				// your network password
 
 unsigned short maxPosX = anzMAX * 8 - 1; 					//calculated maxposition
 unsigned short LEDarr[anzMAX][8];						//character matrix to display (40*8)
 unsigned short helpArrMAX[anzMAX * 8];    				//helperarray for chardecoding
 unsigned short helpArrPos[anzMAX * 8];				//helperarray pos of chardecoding
-unsigned int z_PosX = 0;									//xPosition im Display für Zeitanzeige
-unsigned int d_PosX = 0;                 //xPosition im Display für Datumanzeige
+unsigned int z_PosX = 0;									//xPosition im Display f�r Zeitanzeige
+unsigned int d_PosX = 0;                 //xPosition im Display f�r Datumanzeige
 bool f_tckr1s = false;
 bool f_tckr50ms = false;
 bool f_tckr24h = false;
@@ -32,7 +35,7 @@ byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packe
 IPAddress timeServerIP;                     // time.nist.gov NTP server address
 tm *tt, ttm;
 
-//Variablen für RTC DS3231
+//Variablen f�r RTC DS3231
 const unsigned char DS3231_ADDRESS = 0x68;
 const unsigned char secondREG = 0x00;
 const unsigned char minuteREG = 0x01;
@@ -63,20 +66,22 @@ struct DateTime {
 	unsigned short tag1, tag2, tag12, mon1, mon2, mon12, jahr1, jahr2, jahr12, WT;
 } MEZ;
 
+
 // The object for the Ticker
 Ticker tckr;
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP udp;
 
-//Monatswerte
+
+//months
 char M_arr[12][5] = { { '.', 'J', 'a', 'n', '.' }, { '.', 'F', 'e', 'b', '.' },
-		{ '.', 'M', 'a', 'e', '.' }, { '.', 'A', 'p', 'r', '.' }, { '.', 'M', 'a',
-				'i', ' ' }, { '.', 'J', 'u', 'n', 'i' }, { '.', 'J', 'u', 'l', 'i' }, {
-				'.', 'A', 'u', 'g', ' ' }, { '.', 'S', 'e', 'p', 't' }, { '.', 'O', 'k',
-				't', '.' }, { '.', 'N', 'o', 'v', ' ' }, { '.', 'D', 'e', 'z', '.' } };
-//Tage
-char WT_arr[7][3] = { { 'S', 'o', ',' }, { 'M', 'o', ',' }, { 'D', 'i', ',' }, {
-		'M', 'i', ',' }, { 'D', 'o', ',' }, { 'F', 'r', ',' }, { 'S', 'a', ',' } };
+		{ '.', 'M', 'a', 'r', '.' }, { '.', 'A', 'p', 'r', '.' }, { '.', 'M', 'a',
+				'y', ' ' }, { '.', 'J', 'u', 'n', 'e' }, { '.', 'J', 'u', 'l', 'y' }, {
+				'.', 'A', 'u', 'g', '.' }, { '.', 'S', 'e', 'p', 't' }, { '.', 'O', 'c',
+				't', '.' }, { '.', 'N', 'o', 'v', '.' }, { '.', 'D', 'e', 'c', '.' } };
+//days
+char WT_arr[7][4] = { { 'S', 'u', 'n', ',' }, { 'M', 'o', 'n', ',' }, { 'T', 'u', 'e', ',' }, {
+		'W', 'e', 'd', ',' }, { 'T', 'h', 'u', ',' }, { 'F', 'r', 'i', ',' }, { 'S', 'a', 't', ',' } };
 
 // Zeichensatz 5x8 in einer 8x8 Matrix, 0,0 ist rechts oben
 unsigned short const font1[96][9] = { { 0x07, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -182,6 +187,8 @@ void connect_to_WiFi() {  // We start by connecting to a WiFi network
 	Serial.println("");
 	Serial.print("Connecting to ");
 	Serial.println(ssid);
+
+	WiFi.mode(WIFI_STA);
 	WiFi.begin(ssid, pass);
 
 	while (WiFi.status() != WL_CONNECTED) {
@@ -192,8 +199,7 @@ void connect_to_WiFi() {  // We start by connecting to a WiFi network
 
 	Serial.println("WiFi connected");
 	Serial.print("IP address: ");
-	Serial.println(WiFi.localIP());
-
+	Serial.println(String(WiFi.localIP()));
 	Serial.println("Starting UDP");
 	udp.begin(localPort);
 	Serial.print("Local port: ");
@@ -236,7 +242,7 @@ tm* connectNTP() { //if response from NTP was succesfull return *tm else return 
 	const unsigned long seventyYears = 2208988800UL;
 	// subtract seventy years:
 	epoch = secsSince1900 - seventyYears +2; //+2000ms Verarbeitungszeit
-
+    //epoch=epoch-3600*6; // difference -6h = -6* 3600 sec)
 	time_t t;
 	t = epoch;
 	tm* tt;
@@ -357,7 +363,7 @@ float rtc_temp() {
 void rtc2mez() {
 
 	unsigned short JaZiff;       //Jahresziffer
-	unsigned short JhZiff = 6;   //Jahrhundertziffer für 20.Jahrhundert
+	unsigned short JhZiff = 6;   //Jahrhundertziffer f�r 20.Jahrhundert
 	unsigned short TaZiff;       //Tagesziffer
 	unsigned short WoTag;        //Wochentag
 	unsigned short SJK = 0;        //Schaltjahreskorrektur
@@ -652,7 +658,8 @@ void timer50ms() {
 //The setup function is called once at startup of the sketch
 void setup() {
 	// Add your initialization code here
-	pinMode(CS, OUTPUT);
+
+   	pinMode(CS, OUTPUT);
 	digitalWrite(CS, HIGH);
 	Serial.begin(115200);
 	//rtc.init(SDA, SCL);
@@ -774,7 +781,7 @@ void loop() {
 			if (f_scroll_x == true) {
 				z_PosX++;
 				d_PosX++;
-				if (d_PosX == 95)
+				if (d_PosX == 101)
 					z_PosX = 0;
 				if (z_PosX == maxPosX) {
 					f_scroll_x = false;
@@ -848,17 +855,18 @@ void loop() {
 			char2Arr(WT_arr[MEZ.WT][0], d_PosX - 5, 0);        //day of the week
 			char2Arr(WT_arr[MEZ.WT][1], d_PosX - 11, 0);
 			char2Arr(WT_arr[MEZ.WT][2], d_PosX - 17, 0);
-			char2Arr(48 + MEZ.tag2, d_PosX - 21, 0);           //day
-			char2Arr(48 + MEZ.tag1, d_PosX - 27, 0);
-			char2Arr(M_arr[MEZ.mon12 - 1][0], d_PosX - 33, 0); //month
-			char2Arr(M_arr[MEZ.mon12 - 1][1], d_PosX - 37, 0);
-			char2Arr(M_arr[MEZ.mon12 - 1][2], d_PosX - 43, 0);
-			char2Arr(M_arr[MEZ.mon12 - 1][3], d_PosX - 49, 0);
-			char2Arr(M_arr[MEZ.mon12 - 1][4], d_PosX - 55, 0);
-			char2Arr('2', d_PosX - 62, 0);                     //year
-			char2Arr('0', d_PosX - 68, 0);
-			char2Arr(48 + MEZ.jahr2, d_PosX - 74, 0);
-			char2Arr(48 + MEZ.jahr1, d_PosX - 80, 0);
+			char2Arr(WT_arr[MEZ.WT][3], d_PosX - 23, 0);
+			char2Arr(48 + MEZ.tag2, d_PosX - 27, 0);           //day
+			char2Arr(48 + MEZ.tag1, d_PosX - 33, 0);
+			char2Arr(M_arr[MEZ.mon12 - 1][0], d_PosX - 39, 0); //month
+			char2Arr(M_arr[MEZ.mon12 - 1][1], d_PosX - 43, 0);
+			char2Arr(M_arr[MEZ.mon12 - 1][2], d_PosX - 49, 0);
+			char2Arr(M_arr[MEZ.mon12 - 1][3], d_PosX - 55, 0);
+			char2Arr(M_arr[MEZ.mon12 - 1][4], d_PosX - 61, 0);
+			char2Arr('2', d_PosX - 68, 0);                     //year
+			char2Arr('0', d_PosX - 74, 0);
+			char2Arr(48 + MEZ.jahr2, d_PosX - 80, 0);
+			char2Arr(48 + MEZ.jahr1, d_PosX - 88, 0);
 
 			refresh_display(); //alle 50ms
 			if (f_scrollend_y == true) {
