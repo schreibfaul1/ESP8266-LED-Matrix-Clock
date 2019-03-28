@@ -1,27 +1,56 @@
-// MatrixClock V1
+//*********************************************************************************************************
+//*    ESP8266 MatrixClock                                                                                  *
+//*********************************************************************************************************
+//
+// first release on 26.02.2017
+// updated on    26.03.2019
+// Version 1.2.1
+//
+//
+// THE SOFTWARE IS PROVIDED "AS IS" FOR PRIVATE USE ONLY, IT IS NOT FOR COMMERCIAL USE IN WHOLE OR PART OR CONCEPT.
+// FOR PERSONAL USE IT IS SUPPLIED WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR
+// OR COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
+//
+//
 
 #include <SPI.h>
 #include <Ticker.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiUdp.h>
-#include <wire.h>
+#include <Wire.h>
 #include <time.h>
-
-
 
 #define SDA        5      // Pin sda (I2C)
 #define SCL        4      // Pin scl (I2C)
 #define CS         15     // Pin cs  (SPI)
 #define anzMAX     6      // Anzahl der kaskadierten Module
 
+char ssid[] = "********";                    // your network SSID (name)
+char pass[] = "********";                    // your network password
+
+
 // other displays -------------------------------------
 //#define REVERSE_HORIZONTAL                        // Parola, Generic and IC-Station
 //#define REVERSE_VERTICAL                          // IC-Station display
 //#define ROTATE_90                                 // Generic display
+/*
+   p  A  B  C  D  E  F  G        7  6  5  4  3  2  1  0        G  F  E  D  C  B  A  p        G  F  E  D  C  B  A  p
+  ------------------------      ------------------------      ------------------------      ------------------------
+0 |o  o  o  o  o  o  o  o|    p |o  o  o  o  o  o  o  o|    0 |o  o  o  o  o  o  o  o|    7 |o  o  o  o  o  o  o  o|
+1 |o  o  o  o  o  o  o  o|    A |o  o  o  o  o  o  o  o|    1 |o  o  o  o  o  o  o  o|    6 |o  o  o  o  o  o  o  o|
+2 |o  o  o  o  o  o  o  o|    B |o  o  o  o  o  o  o  o|    2 |o  o  o  o  o  o  o  o|    5 |o  o  o  o  o  o  o  o|
+3 |o  o              o  o|    C |o  o              o  o|    3 |o  o              o  o|    4 |o  o              o  o|
+4 |o  o    FC-16     o  o|    D |o  o   Generic    o  o|    4 |o  o   Parola     o  o|    3 |o  o  IC-Station  o  o|
+5 |o  o              o  o|    E |o  o              o  o|    5 |o  o              o  o|    2 |o  o              o  o|
+6 |o  o  o  o  o  o  o  o|    F |o  o  o  o  o  o  o  o|    6 |o  o  o  o  o  o  o  o|    1 |o  o  o  o  o  o  o  o|
+7 |o  o  o  o  o  o  o  o|    G |o  o  o  o  o  o  o  o|    7 |o  o  o  o  o  o  o  o|    0 |o  o  o  o  o  o  o  o|
+  ------------------------      ------------------------      ------------------------      ------------------------
+*/
 
-char ssid[] = "**********";                         // your network SSID (name)
-char pass[] = "**********";                         // your network password
+
 
 unsigned short maxPosX = anzMAX * 8 - 1;            //calculated maxposition
 unsigned short LEDarr[anzMAX][8];                   //character matrix to display (40*8)
@@ -907,7 +936,7 @@ void loop() {
             char2Arr('2', d_PosX - 68, 0);                     //year
             char2Arr('0', d_PosX - 74, 0);
             char2Arr(48 + MEZ.jahr2, d_PosX - 80, 0);
-            char2Arr(48 + MEZ.jahr1, d_PosX - 88, 0);
+            char2Arr(48 + MEZ.jahr1, d_PosX - 86, 0);
 
             refresh_display(); //alle 50ms
             if (f_scrollend_y == true) {
