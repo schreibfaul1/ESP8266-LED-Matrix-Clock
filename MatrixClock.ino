@@ -4,7 +4,7 @@
 //
 // first release on 26.02.2017
 // updated on    30.11.2020
-// Version 2.0.1
+// Version 2.0.2
 //
 //
 // THE SOFTWARE IS PROVIDED "AS IS" FOR PRIVATE USE ONLY, IT IS NOT FOR COMMERCIAL USE IN WHOLE OR PART OR CONCEPT.
@@ -547,11 +547,10 @@ void max7219_set_brightness(unsigned short br) { //brightness MAX7219
 
 void clear_Display() {  //clear all
     uint8_t i, j;
-    for (i = 0; i < 8; i++)     //8 rows
-    {
+    for(i = 0; i < 8; i++) {    //8 rows
         digitalWrite(MAX_CS, LOW);
         delayMicroseconds(1);
-        for (j = anzMAX; j > 0; j--) {
+        for(j = anzMAX; j > 0; j--) {
             _LEDarr[j - 1][i] = 0;       //LEDarr clear
             SPI.write(i + 1);           //current row
             SPI.write(_LEDarr[j - 1][i]);
@@ -562,19 +561,18 @@ void clear_Display() {  //clear all
 //----------------------------------------------------------------------------------------------------------------------
 
 void rotate_90() { // for Generic displays
-    for (uint8_t k = anzMAX; k > 0; k--) {
-
+    for(uint8_t k = anzMAX; k > 0; k--) {
         uint8_t i, j, m, imask, jmask;
-        uint8_t tmp[8]={0,0,0,0,0,0,0,0};
-        for (  i = 0, imask = 0x01; i < 8; i++, imask <<= 1) {
-          for (j = 0, jmask = 0x01; j < 8; j++, jmask <<= 1) {
-            if (_LEDarr[k-1][i] & jmask) {
-              tmp[j] |= imask;
+        uint8_t tmp[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+        for(i = 0, imask = 0x01; i < 8; i++, imask <<= 1) {
+            for(j = 0, jmask = 0x01; j < 8; j++, jmask <<= 1) {
+                if(_LEDarr[k - 1][i] & jmask) {
+                    tmp[j] |= imask;
+                }
             }
-          }
         }
-        for(m=0; m<8; m++){
-            _LEDarr[k-1][m]=tmp[m];
+        for(m = 0; m < 8; m++) {
+            _LEDarr[k - 1][m] = tmp[m];
         }
     }
 }
@@ -582,16 +580,13 @@ void rotate_90() { // for Generic displays
 
 void refresh_display() { //take info into LEDarr
     uint8_t i, j;
-
 #ifdef ROTATE_90
     rotate_90();
 #endif
-
-    for (i = 0; i < 8; i++)     //8 rows
-    {
+    for(i = 0; i < 8; i++) {    //8 rows
         digitalWrite(MAX_CS, LOW);
         delayMicroseconds(1);
-        for (j = anzMAX; j > 0; j--) {
+        for(j = anzMAX; j > 0; j--) {
             SPI.write(i + 1);  //current row
 #ifdef REVERSE_HORIZONTAL
             SPI.setBitOrder(LSBFIRST);      // bitorder for reverse columns
@@ -613,21 +608,21 @@ void refresh_display() { //take info into LEDarr
 //----------------------------------------------------------------------------------------------------------------------
 
 uint8_t char2Arr_t(unsigned short ch, int PosX, short PosY) { //characters into arr, shows only the time
-    int i, j, k, l, m, o1, o2, o3, o4=0;
+    int i, j, k, l, m, o1, o2, o3, o4 = 0;
     PosX++;
     k = ch - 0x30;                       //ASCII position in font
-    if ((k >= 0) && (k < 11)){           //character found in font?
+    if((k >= 0) && (k < 11)) {           //character found in font?
         o4 = font_t[k][0];               //character width
-        o3 = 1 << (o4-1);
-        for (i = 0; i < o4; i++) {
-            if (((PosX - i <= _maxPosX) && (PosX - i >= 0)) && ((PosY > -8) && (PosY < 8))){ //within matrix?
+        o3 = 1 << (o4 - 1);
+        for(i = 0; i < o4; i++) {
+            if(((PosX - i <= _maxPosX) && (PosX - i >= 0)) && ((PosY > -8) && (PosY < 8))) { //within matrix?
                 o1 = _helpArrPos[PosX - i];
                 o2 = _helpArrMAX[PosX - i];
-                for (j = 0; j < 8; j++) {
-                    if (((PosY >= 0) && (PosY <= j)) || ((PosY < 0) && (j < PosY + 8))){ //scroll vertical
+                for(j = 0; j < 8; j++) {
+                    if(((PosY >= 0) && (PosY <= j)) || ((PosY < 0) && (j < PosY + 8))) { //scroll vertical
                         l = font_t[k][j + 1];
                         m = (l & (o3 >> i));  //e.g. o4=7  0zzzzz0, o4=4  0zz0
-                        if (m > 0)
+                        if(m > 0)
                             _LEDarr[o2][j - PosY] = _LEDarr[o2][j - PosY] | (o1);  //set point
                         else
                             _LEDarr[o2][j - PosY] = _LEDarr[o2][j - PosY] & (~o1); //clear point
@@ -641,19 +636,21 @@ uint8_t char2Arr_t(unsigned short ch, int PosX, short PosY) { //characters into 
 //----------------------------------------------------------------------------------------------------------------------
 
 uint8_t char2Arr_p(uint16_t ch, int PosX) { //characters into arr, proportional font
-    int i, j, l, m, o1, o2, o3, o4=0;
-    if (ch <= 345){                   //character found in font?
+    int i, j, l, m, o1, o2, o3, o4 = 0;
+    if(ch <= 345) {                   //character found in font?
         o4 = font_p[ch][0];              //character width
         o3 = 1 << (o4 - 1);
-        for (i = 0; i < o4; i++) {
-            if ((PosX - i <= _maxPosX) && (PosX - i >= 0)){ //within matrix?
+        for(i = 0; i < o4; i++) {
+            if((PosX - i <= _maxPosX) && (PosX - i >= 0)) { //within matrix?
                 o1 = _helpArrPos[PosX - i];
                 o2 = _helpArrMAX[PosX - i];
-                for (j = 0; j < 8; j++) {
+                for(j = 0; j < 8; j++) {
                     l = font_p[ch][j + 1];
                     m = (l & (o3 >> i));  //e.g. o4=7  0zzzzz0, o4=4  0zz0
-                    if (m > 0)  _LEDarr[o2][j] = _LEDarr[o2][j] | (o1);  //set point
-                    else        _LEDarr[o2][j] = _LEDarr[o2][j] & (~o1); //clear point
+                    if(m > 0)
+                        _LEDarr[o2][j] = _LEDarr[o2][j] | (o1);  //set point
+                    else
+                        _LEDarr[o2][j] = _LEDarr[o2][j] & (~o1); //clear point
                 }
             }
         }
@@ -799,6 +796,7 @@ void loop() {
 #else
         uint8_t h=tm.tm_hour;    // convert to 12 hour format
         if(h>12) h-=12;
+        if(h==0) h=12;
         hour1 = (h % 10);
         hour2 = (h / 10);
 #endif //FORMAT24H
@@ -831,11 +829,19 @@ void loop() {
             hour1 = 0;
             sc6 = 1;
         }
+#ifdef FORMAT24H
         if ((hour2 == 2) && (hour1 == 4)) {
             hour1 = 0;
             hour2 = 0;
             sc6 = 1;
         }
+#else
+        if ((hour2 == 1) && (hour1 == 3)) { // 12 hour format
+            hour1 = 1;
+            hour2 = 0;
+            sc6 = 1;
+        }
+#endif //FORMAT24H
         sec11 = sec12;
         sec12 = sec1;
         sec21 = sec22;
@@ -852,7 +858,7 @@ void loop() {
 #ifdef UDTXT
         if (tm.tm_sec == 25) f_scroll_x2 = true; // scroll userdefined text
 #endif //UDTXT
-    } // end 1s
+    } // end lastsec
 // ----------------------------------------------
     if (_f_tckr50ms == true) {
         _f_tckr50ms = false;
