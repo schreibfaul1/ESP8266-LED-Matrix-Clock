@@ -9,6 +9,6 @@ benötigt werden:
 Brief description:
 During setup, the current time is obtained from an NTP via WLAN. If the clock is in operation, this process is repeated daily 
 
-![MatrixClock](https://github.com/schreibfaul1/ESP8266-LED-Matrix-Clock/blob/master/Matrix_Clock.jpg)
+![MatrixClock](https://github.com/schreibfaul1/ESP8266-LED-Matrix-Clock/blob/master/ESP8266_LED_Matrix_Clock.gif)
 
 
